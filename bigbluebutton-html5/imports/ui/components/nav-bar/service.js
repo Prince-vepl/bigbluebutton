@@ -1,6 +1,7 @@
 import Auth from '/imports/ui/services/auth';
 import { makeCall } from '/imports/ui/services/api';
 import RecordMeetings from '/imports/api/meetings';
+import Users from '/imports/api/users';
 
 const processOutsideToggleRecording = (e) => {
   switch (e.data) {
@@ -26,6 +27,7 @@ const connectRecordingObserver = () => {
 };
 
 export default {
+  amIPresenter: () => Users.findOne({ userId: Auth.userID }, { fields: { presenter: 1 } }).presenter,
   connectRecordingObserver: () => connectRecordingObserver(),
   processOutsideToggleRecording: arg => processOutsideToggleRecording(arg),
 };

@@ -12,6 +12,7 @@ import NavBar from './component';
 
 const PUBLIC_CONFIG = Meteor.settings.public;
 const ROLE_MODERATOR = PUBLIC_CONFIG.user.role_moderator;
+const ROLE_VIEWER = PUBLIC_CONFIG.user.role_viewer;
 const NavBarContainer = ({ children, ...props }) => (
   <NavBar {...props}>
     {children}
@@ -52,10 +53,14 @@ export default withTracker(() => {
   const openPanel = Session.get('openPanel');
   const isExpanded = openPanel !== '';
   const amIModerator = currentUser.role === ROLE_MODERATOR;
+  const amIViewer = currentUser.role === ROLE_VIEWER;
   const hasUnreadMessages = checkUnreadMessages();
+  const amIPresenter = null;
 
   return {
     amIModerator,
+    amIViewer,
+    amIPresenter: Service.amIPresenter(),
     isExpanded,
     currentUserId: Auth.userID,
     processOutsideToggleRecording,

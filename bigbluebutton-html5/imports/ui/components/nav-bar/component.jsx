@@ -6,13 +6,12 @@ import { withModalMounter } from '/imports/ui/components/modal/service';
 import withShortcutHelper from '/imports/ui/components/shortcut-help/service';
 import getFromUserSettings from '/imports/ui/services/users-settings';
 import { defineMessages, injectIntl } from 'react-intl';
-import Icon from '../icon/component';
 import { styles } from './styles.scss';
 import Button from '../button/component';
 import RecordingIndicator from './recording-indicator/container';
 import TalkingIndicatorContainer from '/imports/ui/components/nav-bar/talking-indicator/container';
 import SettingsDropdownContainer from './settings-dropdown/container';
-
+import ChatService from '../chat/service';
 
 const intlMessages = defineMessages({
   toggleUserListLabel: {
@@ -52,6 +51,22 @@ class NavBar extends PureComponent {
     Session.set('idChatOpen', '');
   }
 
+
+  static handleHandRaise(amIModerator, amIPresenter, amIViewer) {
+	  /*  const {
+      amIModerator,
+	  amIPresenter,
+    } = this.props;
+	*/
+	  if (amIModerator) {
+		  ChatService.sendGroupMessage('Moderator : Hand raised');
+	  } else if (amIPresenter) {
+		  ChatService.sendGroupMessage('Presenter :Hand raised');
+	  } else {
+      ChatService.sendGroupMessage(' Hand raised');
+	  }
+  }
+
   componentDidMount() {
     const {
       processOutsideToggleRecording,
@@ -78,6 +93,8 @@ class NavBar extends PureComponent {
       mountModal,
       presentationTitle,
       amIModerator,
+	    amIPresenter,
+      amIViewer,
     } = this.props;
 
 
@@ -92,9 +109,6 @@ class NavBar extends PureComponent {
       <div className={styles.navbar}>
         <div className={styles.top}>
           <div className={styles.left}>
-            {!isExpanded ? null
-              : <Icon iconName="left_arrow" className={styles.arrowLeft} />
-            }
             <Button
               data-test="userListToggleButton"
               onClick={NavBar.handleToggleUserList}
@@ -108,9 +122,21 @@ class NavBar extends PureComponent {
               aria-expanded={isExpanded}
               accessKey={TOGGLE_USERLIST_AK}
             />
-            {isExpanded ? null
-              : <Icon iconName="right_arrow" className={styles.arrowRight} />
-            }
+          </div>
+          <div className={styles.left}>
+            <Button
+              data-test="userListToggleButton"
+              onClick={() => NavBar.handleHandRaise(amIModerator, amIPresenter, amIViewer)}
+              ghost
+              circle
+              hideLabel
+              label={intl.formatMessage(intlMessages.toggleUserListLabel)}
+              aria-label={ariaLabel}
+              icon="hand"
+              className={cx(toggleBtnClasses)}
+              aria-expanded={isExpanded}
+              accessKey={TOGGLE_USERLIST_AK}
+            />
           </div>
           <div className={styles.center}>
             <h1 className={styles.presentationTitle}>{presentationTitle}</h1>
