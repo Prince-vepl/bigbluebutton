@@ -80,7 +80,7 @@ const propTypes = {
   actionsbar: PropTypes.element,
   captions: PropTypes.element,
   locale: PropTypes.string,
-  meeting: PropTypes.object.isRequired,//added by prince
+  meeting: PropTypes.object.isRequired, // added by prince
   updateLockSettings: PropTypes.func.isRequired,
   intl: intlShape.isRequired,
 };
@@ -111,7 +111,7 @@ class App extends Component {
 
   componentDidMount() {
     const {
-      locale, notify, intl, validIOSVersion, startBandwidthMonitoring, handleNetworkConnection,meeting,updateLockSettings,
+      locale, notify, intl, validIOSVersion, startBandwidthMonitoring, handleNetworkConnection, meeting, updateLockSettings,
     } = this.props;
     const BROWSER_RESULTS = browser();
     const isMobileBrowser = BROWSER_RESULTS.mobile || BROWSER_RESULTS.os.includes('Android');
@@ -195,13 +195,11 @@ class App extends Component {
     }
   }
 
-  /* added by prince*/
-  disableAllUserWebcam()
-  {
-
-     const { meeting: { lockSettingsProps } } = this.props; 
-     const {updateLockSettings} = this.props;
-     lockSettingsProps['disableCam'] = true;
+  /* added by prince */
+  disableAllUserWebcam() {
+    const { meeting: { lockSettingsProps } } = this.props;
+    const { updateLockSettings } = this.props;
+    lockSettingsProps.disableCam = true;
 
     this.setState({
       lockSettingsProps,
