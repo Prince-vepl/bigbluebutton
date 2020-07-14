@@ -23,7 +23,6 @@ import MediaService from '/imports/ui/components/media/service';
 import ManyWebcamsNotifier from '/imports/ui/components/video-provider/many-users-notify/container';
 import { styles } from './styles';
 
-
 const MOBILE_MEDIA = 'only screen and (max-width: 40em)';
 const APP_CONFIG = Meteor.settings.public.app;
 const DESKTOP_FONT_SIZE = APP_CONFIG.desktopFontSize;
@@ -80,8 +79,6 @@ const propTypes = {
   actionsbar: PropTypes.element,
   captions: PropTypes.element,
   locale: PropTypes.string,
-  meeting: PropTypes.object.isRequired, // added by prince
-  updateLockSettings: PropTypes.func.isRequired,
   intl: intlShape.isRequired,
 };
 
@@ -91,7 +88,6 @@ const defaultProps = {
   media: null,
   actionsbar: null,
   captions: null,
-  meeting: null,
   locale: 'en',
 };
 
@@ -111,7 +107,7 @@ class App extends Component {
 
   componentDidMount() {
     const {
-      locale, notify, intl, validIOSVersion, startBandwidthMonitoring, handleNetworkConnection, meeting, updateLockSettings,
+      locale, notify, intl, validIOSVersion, startBandwidthMonitoring, handleNetworkConnection,
     } = this.props;
     const BROWSER_RESULTS = browser();
     const isMobileBrowser = BROWSER_RESULTS.mobile || BROWSER_RESULTS.os.includes('Android');
@@ -136,7 +132,6 @@ class App extends Component {
     }
 
     this.handleWindowResize();
-    this.disableAllUserWebcam(); // added by prince
     window.addEventListener('resize', this.handleWindowResize, false);
 
     if (ENABLE_NETWORK_MONITORING) {
@@ -193,19 +188,6 @@ class App extends Component {
     if (navigator.connection) {
       navigator.connection.addEventListener('change', handleNetworkConnection, false);
     }
-  }
-
-  /* added by prince */
-  disableAllUserWebcam() {
-    const { meeting: { lockSettingsProps } } = this.props;
-    const { updateLockSettings } = this.props;
-    lockSettingsProps.disableCam = true;
-
-    this.setState({
-      lockSettingsProps,
-    });
-
-    updateLockSettings(lockSettingsProps);
   }
 
   handleWindowResize() {

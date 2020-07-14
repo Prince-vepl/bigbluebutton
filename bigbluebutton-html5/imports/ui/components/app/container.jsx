@@ -13,9 +13,6 @@ import deviceInfo from '/imports/utils/deviceInfo';
 import UserInfos from '/imports/api/users-infos';
 import { startBandwidthMonitoring, updateNavigatorConnection } from '/imports/ui/services/network-information/index';
 
-// added by prince
-import { updateLockSettings } from '/imports/ui/components/lock-viewers/service';
-
 import {
   getFontSize,
   getBreakoutRooms,
@@ -81,7 +78,6 @@ const currentUserEmoji = currentUser => (currentUser ? {
 
 export default injectIntl(withModalMounter(withTracker(({ intl, baseControls }) => {
   const currentUser = Users.findOne({ userId: Auth.userID }, { fields: { approved: 1, emoji: 1 } });
-  // const updateLockSettings = updateLockSettings;
   const currentMeeting = Meetings.findOne({ meetingId: Auth.meetingID },
     { fields: { publishedPoll: 1, voiceProp: 1 } });
   const { publishedPoll, voiceProp } = currentMeeting;
@@ -106,8 +102,6 @@ export default injectIntl(withModalMounter(withTracker(({ intl, baseControls }) 
     requesterUserId: Auth.userID,
   }).fetch();
 
-  const meeting = Meetings.findOne({ meetingId: Auth.meetingID }); // added by prince
-
   return {
     captions: CaptionsService.isCaptionsActive() ? <CaptionsContainer /> : null,
     fontSize: getFontSize(),
@@ -125,8 +119,6 @@ export default injectIntl(withModalMounter(withTracker(({ intl, baseControls }) 
     hasPublishedPoll: publishedPoll,
     startBandwidthMonitoring,
     handleNetworkConnection: () => updateNavigatorConnection(navigator.connection),
-    meeting, // added by prince
-    updateLockSettings,
   };
 })(AppContainer)));
 
