@@ -10,6 +10,7 @@ import userListService from '../user-list/service';
 import Service from './service';
 import NavBar from './component';
 
+
 const PUBLIC_CONFIG = Meteor.settings.public;
 const ROLE_MODERATOR = PUBLIC_CONFIG.user.role_moderator;
 const ROLE_VIEWER = PUBLIC_CONFIG.user.role_viewer;
@@ -56,6 +57,7 @@ export default withTracker(() => {
   const amIViewer = currentUser.role === ROLE_VIEWER;
   const hasUnreadMessages = checkUnreadMessages();
   const amIPresenter = null;
+  const User = Users.findOne({ userId: Auth.userID }, { fields: { locked: 1, role: 1 } });
 
   return {
     amIModerator,
@@ -68,5 +70,6 @@ export default withTracker(() => {
     meetingId,
     presentationTitle: meetingTitle,
     hasUnreadMessages,
+    User,
   };
 })(NavBarContainer);
