@@ -12,7 +12,7 @@ import RecordingIndicator from './recording-indicator/container';
 import TalkingIndicatorContainer from '/imports/ui/components/nav-bar/talking-indicator/container';
 import SettingsDropdownContainer from './settings-dropdown/container';
 import ChatService from '../chat/service';
-import UserLiseServices from  '../user-list/service'
+import UserLiseServices from '../user-list/service';
 
 const intlMessages = defineMessages({
   toggleUserListLabel: {
@@ -53,7 +53,7 @@ class NavBar extends PureComponent {
   }
 
 
-  static handleHandRaise(amIModerator, amIPresenter, amIViewer,User) {
+  static handleHandRaise(amIModerator, amIPresenter, amIViewer, User) {
 	  /*  const {
       amIModerator,
 	  amIPresenter,
@@ -66,7 +66,7 @@ class NavBar extends PureComponent {
 	  } else {
       ChatService.sendGroupMessage(' Hand raised');
     }
-    UserLiseServices.setEmojiStatus(User._id,'raiseHand')
+    UserLiseServices.setEmojiStatus(User._id, 'raiseHand');
   }
 
   componentDidMount() {
@@ -129,7 +129,7 @@ class NavBar extends PureComponent {
           <div className={styles.left}>
             <Button
               data-test="userListToggleButton"
-              onClick={() => NavBar.handleHandRaise(amIModerator, amIPresenter, amIViewer,User)}
+              onClick={() => NavBar.handleHandRaise(amIModerator, amIPresenter, amIViewer, User)}
               ghost
               circle
               hideLabel

@@ -13,6 +13,8 @@ import _ from 'lodash';
 import KEY_CODES from '/imports/utils/keyCodes';
 import AudioService from '/imports/ui/components/audio/service';
 import logger from '/imports/startup/client/logger';
+import VideoStreams from '/imports/api/video-streams/';
+
 
 const CHAT_CONFIG = Meteor.settings.public.chat;
 const PUBLIC_GROUP_CHAT_ID = CHAT_CONFIG.public_group_id;
@@ -86,9 +88,9 @@ const sortUsersByModerator = (a, b) => {
   } if (b.role === ROLE_MODERATOR) {
     return 1;
   }
-
   return 0;
 };
+
 
 const sortUsersByPhoneUser = (a, b) => {
   if (!a.clientType === DIAL_IN_CLIENT_TYPE && !b.clientType === DIAL_IN_CLIENT_TYPE) {
@@ -112,6 +114,50 @@ const sortUsersByCurrent = (a, b) => {
 
   return 0;
 };
+//const videoStreams = VideoStreams.findOne({ userId }, { fields: {} });
+// added by prince
+const sortUsersByWebCamStatus = (a, b) => {
+   var   aID = a.userId;
+   var   bID = b.userId;
+   //  meetingId: 1, userId: 1
+   
+    const videoStreams_a = VideoStreams.findOne({ userId: Auth._userID }, { fields: {} });
+   // const videoStreams_b = VideoStreams.findOne({ userId: b.userId }, { fields: {} });
+
+   //const videoStreams_a = VideoStreams.findOne({ userId: Auth._userID  });
+   const videoStreams_b = VideoStreams.findOne({ userId: b.userId  });
+
+   if( videoStreams_a && videoStreams_a ) {
+     return 0;
+   } if( videoStreams_a ){
+     return -1;
+   } if( videoStreams_b ){
+     return 1;
+   }
+
+   return 0;
+};
+
+
+// added by prince
+const sortUsersByMicStatus = (a, b) => {
+ // var   aID = a.userId;
+  //var   bID = b.userId;
+  //  meetingId: 1, userId: 1
+  const voiceUser_a = VoiceUsers.findOne({ meetingId: a.meetingId, intId: a.userId }); //  meetingId, intId: userId
+  const voiceUser_b = VoiceUsers.findOne({ meetingId: b.meetingId, intId: b.userId });
+  if(voiceUser_a && voiceUser_b)
+  {
+    if (voiceUser_a.talking && voiceUser_b.talking ) {
+      return 0;
+    } if (voiceUser_a.talking) {
+      return -1;
+    } if (voiceUser_b.talking) {
+      return 1;
+    }
+  }
+  return 0;
+};
 
 const sortUsers = (a, b) => {
   let sort = sortUsersByCurrent(a, b);
@@ -126,6 +172,15 @@ const sortUsers = (a, b) => {
 
   if (sort === 0) {
     sort = sortUsersByPhoneUser(a, b);
+  }
+
+  if (sort === 0) {
+    sort = sortUsersByWebCamStatus(a, b);
+  }
+  
+  if(sort === 0)
+  {
+    sort = sortUsersByMicStatus(a,b);
   }
 
   if (sort === 0) {
