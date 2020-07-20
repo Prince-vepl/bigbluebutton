@@ -5,19 +5,27 @@ import cx from 'classnames';
 import { withModalMounter } from '/imports/ui/components/modal/service';
 import withShortcutHelper from '/imports/ui/components/shortcut-help/service';
 import getFromUserSettings from '/imports/ui/services/users-settings';
-import { defineMessages, injectIntl } from 'react-intl';
+import { defineMessages, injectIntl, intlShape } from 'react-intl';
 import { styles } from './styles.scss';
 import Button from '../button/component';
 import RecordingIndicator from './recording-indicator/container';
 import TalkingIndicatorContainer from '/imports/ui/components/nav-bar/talking-indicator/container';
 import SettingsDropdownContainer from './settings-dropdown/container';
 import ChatService from '../chat/service';
-import UserLiseServices from '../user-list/service';
+import UserLiseServices from  '../user-list/service'
 
 const intlMessages = defineMessages({
   toggleUserListLabel: {
     id: 'app.navBar.userListToggleBtnLabel',
     description: 'Toggle button label',
+  },
+  handRaiseLabel: {
+    id: 'app.actionsBar.emojiMenu.raiseHandLabel',
+    description: 'Raise Hand',
+  },
+  toggleUsersWebcam: {
+    id: 'app.navBar.toggleUsersWebcam',
+    description: 'Toggle users webcam permission',
   },
   toggleUserListAria: {
     id: 'app.navBar.toggleUserList.ariaLabel',
@@ -33,15 +41,31 @@ const propTypes = {
   presentationTitle: PropTypes.string,
   hasUnreadMessages: PropTypes.bool,
   shortcuts: PropTypes.string,
+  meeting: PropTypes.object.isRequired, // added by prince
+  updateLockSettings: PropTypes.func.isRequired,
+  intl: intlShape.isRequired,
 };
 
 const defaultProps = {
   presentationTitle: 'Default Room Title',
   hasUnreadMessages: false,
   shortcuts: '',
+  meeting: null,
 };
 
 class NavBar extends PureComponent {
+
+  constructor(props) { // added by prince
+    super(props);
+
+    const { meeting: { lockSettingsProps, usersProp } } = this.props;
+
+    this.state = {
+      lockSettingsProps,
+      usersProp,
+    };
+  }
+
   static handleToggleUserList() {
     Session.set(
       'openPanel',
@@ -53,12 +77,9 @@ class NavBar extends PureComponent {
   }
 
 
-  static handleHandRaise(amIModerator, amIPresenter, amIViewer, User) {
-	  /*  const {
-      amIModerator,
-	  amIPresenter,
-    } = this.props;
-	*/
+  // added by prince
+  static handleHandRaise(amIModerator, amIPresenter, amIViewer,User) {
+
 	  if (amIModerator) {
 		  ChatService.sendGroupMessage('Moderator : Hand raised');
 	  } else if (amIPresenter) {
@@ -66,13 +87,53 @@ class NavBar extends PureComponent {
 	  } else {
       ChatService.sendGroupMessage(' Hand raised');
     }
-    UserLiseServices.setEmojiStatus(User._id, 'raiseHand');
+    UserLiseServices.setEmojiStatus(User._id,'raiseHand')
   }
+
+   // added by prince
+    handleWebcamToggleButton() {
+    const { updateLockSettings } = this.props;
+    const { lockSettingsProps } = this.state;
+
+    lockSettingsProps['disableCam'] = !lockSettingsProps['disableCam'];
+    this.setState({
+      lockSettingsProps,
+    });
+
+    updateLockSettings(lockSettingsProps);
+  }
+
+   // added by prince     
+  ShowWebcamToggleButton(amIViewer,intl)
+   {
+     if(!amIViewer)
+     {
+       return(
+         <Button
+                   data-test="userListToggleButton"
+                   onClick={() => this.handleWebcamToggleButton()}
+                   ghost
+                   circle
+                   hideLabel
+                   label={intl.formatMessage(intlMessages.toggleUsersWebcam)}
+                   aria-label={this.ariaLabel}
+                   icon="video"
+                   className={cx(this.toggleBtnClasses)}
+                   aria-expanded={this.isExpanded}
+                   accessKey={this.TOGGLE_USERLIST_AK}
+                 />
+   
+       );
+     }
+   }
 
   componentDidMount() {
     const {
       processOutsideToggleRecording,
       connectRecordingObserver,
+      meeting,
+      updateLockSettings,
+      intl,
     } = this.props;
 
     if (Meteor.settings.public.allowOutsideCommands.toggleRecording
@@ -98,6 +159,8 @@ class NavBar extends PureComponent {
 	    amIPresenter,
       amIViewer,
       User,
+      meeting,
+      updateLockSettings,
     } = this.props;
 
 
@@ -107,6 +170,8 @@ class NavBar extends PureComponent {
 
     let ariaLabel = intl.formatMessage(intlMessages.toggleUserListAria);
     ariaLabel += hasUnreadMessages ? (` ${intl.formatMessage(intlMessages.newMessages)}`) : '';
+      
+
 
     return (
       <div className={styles.navbar}>
@@ -126,20 +191,24 @@ class NavBar extends PureComponent {
               accessKey={TOGGLE_USERLIST_AK}
             />
           </div>
-          <div className={styles.left}>
+          <div className={styles.left}> 
             <Button
               data-test="userListToggleButton"
-              onClick={() => NavBar.handleHandRaise(amIModerator, amIPresenter, amIViewer, User)}
+              onClick={() => NavBar.handleHandRaise(amIModerator, amIPresenter, amIViewer,User)}
               ghost
               circle
               hideLabel
-              label={intl.formatMessage(intlMessages.toggleUserListLabel)}
+              label={intl.formatMessage(intlMessages.handRaiseLabel)}
               aria-label={ariaLabel}
               icon="hand"
               className={cx(toggleBtnClasses)}
               aria-expanded={isExpanded}
               accessKey={TOGGLE_USERLIST_AK}
             />
+          </div>
+          <div className={styles.left}>
+            { this.ShowWebcamToggleButton(amIViewer,intl) }
+        
           </div>
           <div className={styles.center}>
             <h1 className={styles.presentationTitle}>{presentationTitle}</h1>

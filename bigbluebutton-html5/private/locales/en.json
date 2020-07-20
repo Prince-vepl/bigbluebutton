@@ -258,6 +258,7 @@
     "app.navBar.settingsDropdown.endMeetingDesc": "Terminates the current meeting",
     "app.navBar.settingsDropdown.endMeetingLabel": "End meeting",
     "app.navBar.userListToggleBtnLabel": "User list toggle",
+    "app.navBar.toggleUsersWebcam": "Toggle users webcam permission",
     "app.navBar.toggleUserList.ariaLabel": "Users and messages toggle",
     "app.navBar.toggleUserList.newMessages": "with new message notification",
     "app.navBar.recording": "This session is being recorded",

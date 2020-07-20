@@ -9,6 +9,8 @@ import getFromUserSettings from '/imports/ui/services/users-settings';
 import userListService from '../user-list/service';
 import Service from './service';
 import NavBar from './component';
+// added by prince
+import { updateLockSettings } from '/imports/ui/components/lock-viewers/service';
 
 
 const PUBLIC_CONFIG = Meteor.settings.public;
@@ -59,6 +61,8 @@ export default withTracker(() => {
   const amIPresenter = null;
   const User = Users.findOne({ userId: Auth.userID }, { fields: { locked: 1, role: 1 } });
 
+  const meeting = Meetings.findOne({ meetingId: Auth.meetingID }); // added by prince
+
   return {
     amIModerator,
     amIViewer,
@@ -71,5 +75,7 @@ export default withTracker(() => {
     presentationTitle: meetingTitle,
     hasUnreadMessages,
     User,
+    meeting, // added by prince
+    updateLockSettings,
   };
 })(NavBarContainer);

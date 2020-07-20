@@ -114,6 +114,8 @@ const sortUsersByCurrent = (a, b) => {
 
   return 0;
 };
+
+
 //const videoStreams = VideoStreams.findOne({ userId }, { fields: {} });
 // added by prince
 const sortUsersByWebCamStatus = (a, b) => {
@@ -121,13 +123,13 @@ const sortUsersByWebCamStatus = (a, b) => {
    var   bID = b.userId;
    //  meetingId: 1, userId: 1
    
-    const videoStreams_a = VideoStreams.findOne({ userId: Auth._userID }, { fields: {} });
+   // const videoStreams_a = VideoStreams.findOne({ userId: Auth._userID }, { fields: {} });
    // const videoStreams_b = VideoStreams.findOne({ userId: b.userId }, { fields: {} });
 
-   //const videoStreams_a = VideoStreams.findOne({ userId: Auth._userID  });
+   const videoStreams_a = VideoStreams.findOne({ userId: a.userId  });
    const videoStreams_b = VideoStreams.findOne({ userId: b.userId  });
 
-   if( videoStreams_a && videoStreams_a ) {
+   if( videoStreams_a && videoStreams_b ) {
      return 0;
    } if( videoStreams_a ){
      return -1;
@@ -166,21 +168,21 @@ const sortUsers = (a, b) => {
     sort = sortUsersByModerator(a, b);
   }
 
+  if (sort === 0) {  // added by prince
+    sort = sortUsersByWebCamStatus(a, b);
+  }
+  
+  if(sort === 0) // added by prince
+  {
+    sort = sortUsersByMicStatus(a,b);
+  }
+
   if (sort === 0) {
     sort = sortUsersByEmoji(a, b);
   }
 
   if (sort === 0) {
     sort = sortUsersByPhoneUser(a, b);
-  }
-
-  if (sort === 0) {
-    sort = sortUsersByWebCamStatus(a, b);
-  }
-  
-  if(sort === 0)
-  {
-    sort = sortUsersByMicStatus(a,b);
   }
 
   if (sort === 0) {
