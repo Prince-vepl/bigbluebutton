@@ -150,11 +150,11 @@ const sortUsersByMicStatus = (a, b) => {
   const voiceUser_b = VoiceUsers.findOne({ meetingId: b.meetingId, intId: b.userId });
   if(voiceUser_a && voiceUser_b)
   {
-    if (voiceUser_a.talking && voiceUser_b.talking ) {
+    if (!voiceUser_a.muted && !voiceUser_b.muted ) {
       return 0;
-    } if (voiceUser_a.talking) {
+    } if (!voiceUser_a.muted) {
       return -1;
-    } if (voiceUser_b.talking) {
+    } if (!voiceUser_b.muted) {
       return 1;
     }
   }
