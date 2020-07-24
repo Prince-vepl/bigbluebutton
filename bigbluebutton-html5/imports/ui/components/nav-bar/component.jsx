@@ -13,19 +13,38 @@ import TalkingIndicatorContainer from '/imports/ui/components/nav-bar/talking-in
 import SettingsDropdownContainer from './settings-dropdown/container';
 import ChatService from '../chat/service';
 import UserLiseServices from  '../user-list/service'
+import Meetings from '/imports/api/meetings';
 
 const intlMessages = defineMessages({
   toggleUserListLabel: {
     id: 'app.navBar.userListToggleBtnLabel',
     description: 'Toggle button label',
   },
-  handRaiseLabel: {
-    id: 'app.actionsBar.emojiMenu.raiseHandLabel',
+  "app.navBar.raiseHandbel": "Raise Hand",
+
+  raiseHandbel: {
+    id: 'app.navBar.raiseHandbel',
     description: 'Raise Hand',
   },
   toggleUsersWebcam: {
     id: 'app.navBar.toggleUsersWebcam',
     description: 'Toggle users webcam permission',
+  },
+  unlockAllUsersWebcam: {
+    id: 'app.navBar.unlockAllUsersWebcam',
+    description: 'press to lock users webcam',
+  },
+  lockAllUsersWebcam: {
+    id: 'app.navBar.lockAllUsersWebcam',
+    description: 'press to unlock users webcam',
+  },
+  unlockAllUsersMic: {
+    id: 'app.navBar.unlockAllUsersMic',
+    description: 'press to lock users mic',
+  },
+  lockAllUsersMic: {
+    id: 'app.navBar.lockAllUsersMic',
+    description: 'press to unlock users mic',
   },
   toggleUserListAria: {
     id: 'app.navBar.toggleUserList.ariaLabel',
@@ -89,8 +108,21 @@ class NavBar extends PureComponent {
     }
     UserLiseServices.setEmojiStatus(User._id,'raiseHand')
   }
+  
+  // added by prince
+  handleAudioToggleButton() {
+    const { updateLockSettings } = this.props;
+    const { lockSettingsProps } = this.state;
 
-   // added by prince
+    lockSettingsProps['disableMic'] = !lockSettingsProps['disableMic'];
+    this.setState({
+      lockSettingsProps,
+    });
+
+    updateLockSettings(lockSettingsProps);
+  }
+  
+  // added by prince
     handleWebcamToggleButton() {
     const { updateLockSettings } = this.props;
     const { lockSettingsProps } = this.state;
@@ -103,8 +135,38 @@ class NavBar extends PureComponent {
     updateLockSettings(lockSettingsProps);
   }
 
+  
+  isAudioLocked = (id) => {
+  const meeting = Meetings.findOne({ meetingId: id }, { fields: { lockSettingsProps: 1 } });
+  let isLocked = false;
+
+  if (meeting.lockSettingsProps !== undefined) {
+    const lockSettings = meeting.lockSettingsProps;
+
+    if (lockSettings.disableMic) {
+      isLocked = true;
+    }
+  }
+
+  return isLocked;
+};
+
+isVideoLocked = (id) => {
+  const meeting = Meetings.findOne({ meetingId: id }, { fields: { lockSettingsProps: 1 } });
+  let isLocked = false;
+
+  if (meeting.lockSettingsProps !== undefined) {
+    const lockSettings = meeting.lockSettingsProps;
+
+    if (lockSettings.disableCam) {
+      isLocked = true;
+    }
+  }
+  return isLocked;
+};
+
    // added by prince     
-  ShowWebcamToggleButton(amIViewer,intl)
+  ShowWebcamToggleButton(amIViewer,intl,meeting)
    {
      if(!amIViewer)
      {
@@ -115,17 +177,40 @@ class NavBar extends PureComponent {
                    ghost
                    circle
                    hideLabel
-                   label={intl.formatMessage(intlMessages.toggleUsersWebcam)}
+                   label={this.isVideoLocked(meeting.meetingId)? intl.formatMessage(intlMessages.lockAllUsersWebcam) : intl.formatMessage(intlMessages.unlockAllUsersWebcam)}
                    aria-label={this.ariaLabel}
-                   icon="video"
+                   icon={this.isVideoLocked(meeting.meetingId)?"video_off": "video" }
                    className={cx(this.toggleBtnClasses)}
                    aria-expanded={this.isExpanded}
                    accessKey={this.TOGGLE_USERLIST_AK}
                  />
-   
        );
      }
    }
+
+     // added by prince     
+  ShowAudioToggleButton(amIViewer,intl,meeting)
+  {
+    if(!amIViewer)
+    {
+      return(
+        <Button
+                  data-test="userListToggleButton"
+                  onClick={() => this.handleAudioToggleButton()}
+                  ghost
+                  circle
+                  hideLabel
+                  label={this.isAudioLocked(meeting.meetingId) ? intl.formatMessage(intlMessages.lockAllUsersMic) :intl.formatMessage(intlMessages.unlockAllUsersMic)}
+                  aria-label={this.ariaLabel}
+                  icon={this.isAudioLocked(meeting.meetingId) ? "mute": "unmute"}
+                  className={cx(this.toggleBtnClasses)}
+                  aria-expanded={this.isExpanded}
+                  accessKey={this.TOGGLE_USERLIST_AK}
+                />
+  
+      );
+    }
+  }
 
   componentDidMount() {
     const {
@@ -198,7 +283,7 @@ class NavBar extends PureComponent {
               ghost
               circle
               hideLabel
-              label={intl.formatMessage(intlMessages.handRaiseLabel)}
+              label={intl.formatMessage(intlMessages.raiseHandbel)}
               aria-label={ariaLabel}
               icon="hand"
               className={cx(toggleBtnClasses)}
@@ -207,7 +292,11 @@ class NavBar extends PureComponent {
             />
           </div>
           <div className={styles.left}>
-            { this.ShowWebcamToggleButton(amIViewer,intl) }
+            { this.ShowWebcamToggleButton(amIViewer,intl,meeting) }
+        
+          </div>
+          <div className={styles.left}>
+            { this.ShowAudioToggleButton(amIViewer,intl,meeting) }
         
           </div>
           <div className={styles.center}>
