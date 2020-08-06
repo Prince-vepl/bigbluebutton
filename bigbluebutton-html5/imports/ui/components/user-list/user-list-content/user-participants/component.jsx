@@ -84,6 +84,36 @@ class UserParticipants extends Component {
   componentDidUpdate(prevProps, prevState) {
     const { selectedUser } = this.state;
 
+    // added  by prince
+    const { users} = this.props;
+    const  prevUsers = prevProps.users;
+    
+    var prevPresenterUserId, currPresenterUserId;
+    for( var i = 0; i< users.length; i++)
+    {
+      if( users[i].presenter == true )
+      {
+        currPresenterUserId = users[i].userId;
+        break;
+      }
+    }
+
+    for( var i = 0; i< prevUsers.length; i++)
+    {
+      if( prevUsers[i].presenter == true )
+      {
+        prevPresenterUserId = prevUsers[i].userId;
+        break;
+      }
+    }
+
+    if( prevPresenterUserId!= currPresenterUserId )
+    {
+      window.dispatchEvent(new Event('presenterChanged')); 
+    }
+  
+    // end by prince
+    
     if (selectedUser === prevState.selectedUser) return;
 
     if (selectedUser) {

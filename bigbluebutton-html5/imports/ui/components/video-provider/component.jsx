@@ -24,6 +24,7 @@ import Auth from '/imports/ui/services/auth';
 
 import VideoService from './service';
 import VideoList from './video-list/component';
+import Userss from '/imports/api/users'; // added by prince
 
 const ENABLE_NETWORK_MONITORING = Meteor.settings.public.networkMonitoring.enableNetworkMonitoring;
 const CAMERA_PROFILES = Meteor.settings.public.kurento.cameraProfiles;
@@ -253,10 +254,49 @@ class VideoProvider extends Component {
   componentWillUpdate({ users, userId }) {
     const usersSharingIds = users.map(u => u.userId);
     const usersConnected = Object.keys(this.webRtcPeers);
-
+    const {userHasStream} = this.props;
     const usersToConnect = usersSharingIds.filter(id => !usersConnected.includes(id));
     const usersToDisconnect = usersConnected.filter(id => !usersSharingIds.includes(id));
+   
+    /* added by prince for controling number of video in meeting
+    var canIStopWebcam = false;
+    var totalMods = 0;
+    var viewerIndexInList = 0;
+    var currViewerIndexInList = 0;
 
+    for( var i=0; i<users.length; i++ ) // added by prince
+    {
+      if( users[i].role == "VIEWER"  && users[i].userId == userId ){
+          currViewerIndexInList = i;
+      }
+
+      if( ( users[i].role == "MODERATOR" )){
+        totalMods++;
+      } 
+
+     if( ( users[i].role == "MODERATOR" || users[i].role == "PRESENTER")
+       && (users[i].userId == userId)  ){
+        amIpresenter = true;
+      } 
+    }
+
+    //VideoList.focusPresenterWebcam();
+
+    if( currViewerIndexInList-totalMods > 2  && userHasStream )
+    {
+      //canIStopWebcam = true;
+     // VideoService.exitVideo();
+    }
+
+   if( totalViewer>2 ){
+      if( userHasStream && canIStopWebcam && viewerIndexInList > 2){
+        VideoService.exitVideo();
+      } 
+     //this.unshareWebcam();
+     //VideoService.exitVideo();
+    //}
+    //VideoService.exitVideo();
+    */
     usersToConnect.forEach(id => this.createWebRTCPeer(id, userId === id));
     usersToDisconnect.forEach(id => this.stopWebRTCPeer(id));
   }
@@ -268,9 +308,49 @@ class VideoProvider extends Component {
       userHasStream,
     } = this.props;
     if (!prevProps.userIsLocked && userIsLocked && userHasStream) VideoService.exitVideo();
-    if (users.length !== prevProps.users.length) window.dispatchEvent(new Event('videoListUsersChange'));
+    if (users.length !== prevProps.users.length)
+    {  
+      window.dispatchEvent(new Event('videoListUsersChange'));
+
+      // added by prince
+      // If presenter starts sharing its webcam (initially it was not sharing the video)
+      // then fire event to change focus of presenter
+      for(var i=0;i<users.length;i++)
+      {
+        var IsPresent = false;
+        for(var j=0;j<prevProps.users.length;j++) // check if new video sharing user is presenter
+        {
+          if(users[i].userId == prevProps.users[j].userId)
+          {
+            IsPresent = true;
+            break;
+          }
+        }
+
+        if( !IsPresent )
+        {
+          const options = {
+            filter: {
+              presenter: 1,
+            },
+          };
+
+          const currentUser = Userss.findOne({
+            userId: users[i].userId,
+          }, options);
+
+          // If new video sharing user is presenter then fire event to change focus
+          if(currentUser.presenter)
+          { 
+            window.dispatchEvent(new Event('presenterChanged')); 
+          }
+        }
+      }
+    }
+    
   }
 
+  
   componentWillUnmount() {
     document.removeEventListener('joinVideo', this.shareWebcam);
     document.removeEventListener('exitVideo', this.unshareWebcam);
@@ -1207,7 +1287,35 @@ class VideoProvider extends Component {
   }
 
   shareWebcam() {
-    if (this.connectedToMediaServer()) {
+    /* 
+    var totalMods = 0;
+    var totalViewer = 0;
+    var viewerIndexInList = 0;
+    var currViewerIndexInList = 0;
+    const {
+      users,
+    } = this.props;
+
+    for( var i=0; i<users.length; i++ ) // added by prince
+    {*/
+      /* if( users[i].role == "VIEWER"  && users[i].userId == userId ){
+          currViewerIndexInList = i;
+      }
+
+      if( ( users[i].role == "MODERATOR" )){
+        totalMods++;
+      } 
+    */
+     /* if( ( users[i].role == "VIEWER" )){
+        totalViewer++;
+      } 
+     /*  if( ( users[i].role == "MODERATOR" || users[i].role == "PRESENTER")
+       && (users[i].userId == userId)  ){
+        amIpresenter = true;
+      } */
+    //}
+    
+    if (this.connectedToMediaServer() ) {
       logger.info({ logCode: 'video_provider_sharewebcam' }, 'Sharing webcam');
       this.sharedWebcam = true;
       VideoService.joiningVideo();

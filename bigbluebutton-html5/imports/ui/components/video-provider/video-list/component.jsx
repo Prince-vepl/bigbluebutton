@@ -9,6 +9,7 @@ import { withDraggableConsumer } from '../../media/webcam-draggable-overlay/cont
 import AutoplayOverlay from '../../media/autoplay-overlay/component';
 import logger from '/imports/startup/client/logger';
 import playAndRetry from '/imports/utils/mediaElementPlayRetry';
+import Userss from '/imports/api/users'; // added by prince
 
 const propTypes = {
   users: PropTypes.arrayOf(PropTypes.object).isRequired,
@@ -91,6 +92,7 @@ class VideoList extends Component {
     this.handleAllowAutoplay = this.handleAllowAutoplay.bind(this);
     this.handlePlayElementFailed = this.handlePlayElementFailed.bind(this);
     this.autoplayWasHandled = false;
+    this.focusPresenterWebcam = this.focusPresenterWebcam.bind(this);
   }
 
   componentDidMount() {
@@ -103,13 +105,54 @@ class VideoList extends Component {
     );
 
     this.handleCanvasResize();
+    this.focusPresenterWebcam();
     window.addEventListener('resize', this.handleCanvasResize, false);
     window.addEventListener('videoPlayFailed', this.handlePlayElementFailed);
+    window.addEventListener('presenterChanged', this.focusPresenterWebcam);    
   }
-
+  
   componentWillUnmount() {
     window.removeEventListener('resize', this.handleCanvasResize, false);
     window.removeEventListener('videoPlayFailed', this.handlePlayElementFailed);
+    window.removeEventListener('fullscreenchange', this.focusPresenterWebcam);
+  }
+
+  focusPresenterWebcam(){
+
+    const { users } = this.props;
+    const { focusedId } = this.state;
+
+    const options = {
+      filter: {
+        presenter: 1,
+      },
+    };
+    
+    var IsPresenterSharingVideo = false;
+
+    for (var i = 0; i < users.length; i++) {
+      const currentUser = Userss.findOne({
+        userId: users[i].userId,
+      }, options);
+
+      if( currentUser.presenter ) // focus video of presenter
+      {
+        // if presenter is not sharing vide and focusid = its userId then clear focusId value before calling handleVideoFocus
+        if( focusedId == currentUser.userId ) focusedId =""; 
+        IsPresenterSharingVideo = true;
+        this.handleVideoFocus(currentUser.userId);
+      }
+  }
+
+   // If presenter is not sharing video then unfocus a user if it is already focused
+  if(!IsPresenterSharingVideo)
+  {
+    if(focusedId)
+    {
+      this.handleVideoFocus(focusedId);
+    }
+  }
+
   }
 
   setOptimalGrid() {
@@ -219,14 +262,16 @@ class VideoList extends Component {
       const isFocused = focusedId === user.userId;
       const isFocusedIntlKey = !isFocused ? 'focus' : 'unfocus';
       let actions = [];
-
-      if (users.length > 2) {
+          
+     /* if (users.length > 2) {  // commented by prince
         actions = [{
           label: intl.formatMessage(intlMessages[`${isFocusedIntlKey}Label`]),
           description: intl.formatMessage(intlMessages[`${isFocusedIntlKey}Desc`]),
           onClick: () => this.handleVideoFocus(user.userId),
         }];
       }
+    */
+   // this.focusPresenterWebcam();
 
       return (
         <div

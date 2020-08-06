@@ -20,8 +20,6 @@ const intlMessages = defineMessages({
     id: 'app.navBar.userListToggleBtnLabel',
     description: 'Toggle button label',
   },
-  "app.navBar.raiseHandbel": "Raise Hand",
-
   raiseHandbel: {
     id: 'app.navBar.raiseHandbel',
     description: 'Raise Hand',
